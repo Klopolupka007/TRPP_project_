@@ -1,5 +1,7 @@
 package Global;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -18,7 +20,7 @@ public class Student<T> {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
-        String temp = "{\"FName\":"+name+",\"SName\":"+surname+",\"VkId\":"+vk+",\"TelegrammId\":"+telegram+",\"Group\":"+group+"}";
+        String temp = "{\"FName\": "+name+",\"LName\": "+surname+",\"VkId\": "+vk+",\"TelegrammId\": "+telegram+",\"Group\": "+group+"}";
         byte[] out = temp.getBytes(StandardCharsets.UTF_8);
         int length = out.length;
 
@@ -28,7 +30,14 @@ public class Student<T> {
         try(OutputStream os = connection.getOutputStream()) {
             os.write(out);
         }
-
+        InputStreamReader isR = new InputStreamReader(connection.getInputStream());
+        BufferedReader bfr = new BufferedReader(isR);
+        StringBuilder str = new StringBuilder();
+        String line;
+        while ((line=bfr.readLine())!=null){
+            str.append(line);
+        }
+        System.out.println(str);
     }
 
     void add(int i, String temp){
