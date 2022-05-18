@@ -76,6 +76,10 @@ public class GlobalPanel extends JPanel {
                                         StudentsListScroll.setVisible(false);
                                         StudentsList.setVisible(false);
                                     }
+                                    if (NewMessScroll!=null) {
+                                        NewMessScroll.setVisible(false);
+                                        NewMess.setVisible(false);
+                                    }
                                     try {
                                         AddMainPage();
                                     } catch (IOException ex) {
@@ -98,6 +102,10 @@ public class GlobalPanel extends JPanel {
                                 //При нажатии на "Объявления"
                                 case 2:
                                 {
+                                    if (NewMessScroll!=null) {
+                                        NewMessScroll.setVisible(false);
+                                        NewMess.setVisible(false);
+                                    }
                                     if (NewStudentsScroll!=null) {
                                         NewStudents.setVisible(false);
                                         NewStudentsScroll.setVisible(false);
@@ -113,6 +121,8 @@ public class GlobalPanel extends JPanel {
                                     MainButtons[3].setVisible(false); MainButtons[4].setVisible(false);
                                     MainButtons[2].setLocation(0,160 );
 
+                                    AddNewMess();
+
                                     MainFrame.pack();
                                     MainFrame.setSize(sizeTemp);
                                     MainFrame.setTitle("Editor – Редактор сообщений");
@@ -122,6 +132,14 @@ public class GlobalPanel extends JPanel {
                                 //При нажатии на "Список студентов"
                                 case 3:
                                 {
+                                    if (StudentsListScroll!=null) {
+                                        StudentsListScroll.setVisible(false);
+                                        StudentsList.setVisible(false);
+                                    }
+                                    if (NewMessScroll!=null) {
+                                        NewMessScroll.setVisible(false);
+                                        NewMess.setVisible(false);
+                                    }
                                     if (NewStudentsScroll!=null) {
                                         NewStudents.setVisible(false);
                                         NewStudentsScroll.setVisible(false);
@@ -145,6 +163,14 @@ public class GlobalPanel extends JPanel {
                                 //При нажатии на "Добавить студента"
                                 case 4:
                                 {
+                                    if (NewStudentsScroll!=null) {
+                                        NewStudents.setVisible(false);
+                                        NewStudentsScroll.setVisible(false);
+                                    }
+                                    if (NewMessScroll!=null) {
+                                        NewMessScroll.setVisible(false);
+                                        NewMess.setVisible(false);
+                                    }
                                     iterForms=0;
                                     mainPanel = new ArrayList<>();
                                     if (MainPageScroll!=null) {
@@ -387,6 +413,7 @@ public class GlobalPanel extends JPanel {
         for (Map.Entry<Integer, ArrayList<String>> e : msg.entrySet()) {
             tempArr = e.getValue();
             labels = new JTextField[6];
+            if (j>21) StudentsList.setPreferredSize(new Dimension(1740, 62+(3+j)*41));
 
             labels[5] = new JTextField(String.valueOf(e.getKey()));
             labels[5].setBounds(20, 62+(j*41), 150, 40);
@@ -575,6 +602,19 @@ public class GlobalPanel extends JPanel {
 
     //Метод отображения редактора объявлений
     void AddNewMess(){
+        NewMess = new JPanel();
+        NewMess.setLayout(null);
+        NewMess.setPreferredSize(new Dimension(1740, 50));
+        NewMessScroll = new JScrollPane(NewMess);
+        NewMessScroll.setBounds(180, 0,1740, 1080);
+        NewMessScroll.getVerticalScrollBar().setUnitIncrement(16);
+        NewMess.setBackground(new Color(66,49,58));
+        NewMessScroll.setVisible(true);
+        NewMessScroll.setBorder(null);
+        add(NewMessScroll);
+
+
+        JTextArea textArea = new JTextArea();
 
     }
 }
