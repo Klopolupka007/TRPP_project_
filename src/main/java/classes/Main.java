@@ -1,4 +1,4 @@
-package Global;
+package classes;
 
 import javax.swing.*;
 

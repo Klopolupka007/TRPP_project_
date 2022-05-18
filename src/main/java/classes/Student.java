@@ -1,13 +1,7 @@
-package Global;
-import org.json.JSONException;
-import org.json.JSONObject;
+package classes;
 import org.python.util.PythonInterpreter;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 
 public class Student<T> {
     String name="unnamed", surname ="unnamed", telegram = "0", vk = "0", group = "unnamed";

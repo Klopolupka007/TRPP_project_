@@ -1,14 +1,20 @@
-package Global;
+package classes;
 
+
+import org.python.util.PythonInterpreter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +27,7 @@ public class GlobalPanel extends JPanel {
     JButton[] MainButtons = new JButton[5];
 
     JPanel MainPage, StudentsList, NewStudents, NewMess;
-    JScrollPane MainPageScroll, StudentsListScroll, NewStudentsScroll, NewMessScroll;
+    JScrollPane MainPageScroll, StudentsListScroll, NewStudentsScroll;
 
     int iterForms=0;
 
@@ -76,8 +82,7 @@ public class GlobalPanel extends JPanel {
                                         StudentsListScroll.setVisible(false);
                                         StudentsList.setVisible(false);
                                     }
-                                    if (NewMessScroll!=null) {
-                                        NewMessScroll.setVisible(false);
+                                    if (NewMess!=null) {
                                         NewMess.setVisible(false);
                                     }
                                     try {
@@ -102,8 +107,7 @@ public class GlobalPanel extends JPanel {
                                 //При нажатии на "Объявления"
                                 case 2:
                                 {
-                                    if (NewMessScroll!=null) {
-                                        NewMessScroll.setVisible(false);
+                                    if (NewMess!=null) {
                                         NewMess.setVisible(false);
                                     }
                                     if (NewStudentsScroll!=null) {
@@ -121,7 +125,11 @@ public class GlobalPanel extends JPanel {
                                     MainButtons[3].setVisible(false); MainButtons[4].setVisible(false);
                                     MainButtons[2].setLocation(0,160 );
 
-                                    AddNewMess();
+                                    try {
+                                        AddNewMess();
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    }
 
                                     MainFrame.pack();
                                     MainFrame.setSize(sizeTemp);
@@ -136,8 +144,7 @@ public class GlobalPanel extends JPanel {
                                         StudentsListScroll.setVisible(false);
                                         StudentsList.setVisible(false);
                                     }
-                                    if (NewMessScroll!=null) {
-                                        NewMessScroll.setVisible(false);
+                                    if (NewMess!=null) {
                                         NewMess.setVisible(false);
                                     }
                                     if (NewStudentsScroll!=null) {
@@ -167,8 +174,7 @@ public class GlobalPanel extends JPanel {
                                         NewStudents.setVisible(false);
                                         NewStudentsScroll.setVisible(false);
                                     }
-                                    if (NewMessScroll!=null) {
-                                        NewMessScroll.setVisible(false);
+                                    if (NewMess!=null) {
                                         NewMess.setVisible(false);
                                     }
                                     iterForms=0;
@@ -363,6 +369,8 @@ public class GlobalPanel extends JPanel {
         }
         return sb;
     }
+
+    Map<Integer, ArrayList<String>> msg;
     //Метод отображения страницы со списком студентов
     void AddStudentList() throws IOException{
         StudentsList = new JPanel();
@@ -390,7 +398,7 @@ public class GlobalPanel extends JPanel {
             e.printStackTrace();
         }
 
-        Map<Integer, ArrayList<String>> msg = parseStudents(str);
+        msg = parseStudents(str);
         ArrayList<String> tempArr;
         JTextField[] labels;
         //Строим панель на основе списка
@@ -600,21 +608,89 @@ public class GlobalPanel extends JPanel {
         });
     }
 
+
+    int ID_user = 0;
     //Метод отображения редактора объявлений
-    void AddNewMess(){
+    void AddNewMess() throws IOException {
         NewMess = new JPanel();
         NewMess.setLayout(null);
-        NewMess.setPreferredSize(new Dimension(1740, 50));
-        NewMessScroll = new JScrollPane(NewMess);
-        NewMessScroll.setBounds(180, 0,1740, 1080);
-        NewMessScroll.getVerticalScrollBar().setUnitIncrement(16);
-        NewMess.setBackground(new Color(66,49,58));
-        NewMessScroll.setVisible(true);
-        NewMessScroll.setBorder(null);
-        add(NewMessScroll);
+        NewMess.setBackground(COLOR_FONT.Frame);
+        NewMess.setSize(1740, 1080);
+        NewMess.setLocation(180,0);
+        add(NewMess);
 
+        JLabel Title = new JLabel("РЕДАКТОР ОБЪЯВЛЕНИЙ");
+        Title.setFont(new Font("Arial Black", Font.BOLD, 30));
+        Title.setForeground(COLOR_FONT.Text);
+        Title.setBounds(30, 50, 700, 60);
+        NewMess.add(Title);
 
         JTextArea textArea = new JTextArea();
+        textArea.setBounds(30,140, 1650, 800);
+        textArea.setFont(COLOR_FONT.simple);
+        textArea.setBackground(COLOR_FONT.Text);
+        textArea.setForeground(COLOR_FONT.Buttons);
+        NewMess.add(textArea);
+
+        StringBuilder str = new StringBuilder();
+        URL url = null;
+        url = new URL("https://buldakovn.pythonanywhere.com/getStudents");
+        HttpURLConnection connection1 = (HttpURLConnection) url.openConnection();
+        connection1.setDoInput(true);
+        connection1.setRequestMethod("GET");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection1.getInputStream()))) {
+            for (String str2; (str2 = reader.readLine()) != null; ) {
+                str.append(str2);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        msg = parseStudents(str);
+        ArrayList<String> string; String[] FIO = new String[msg.size()];
+        int i =0;
+        for (Map.Entry<Integer, ArrayList<String>> e : msg.entrySet()) {
+            string = e.getValue();
+            FIO[i] = string.get(1) + " " + string.get(2);
+            i++;
+        }
+        JComboBox box = new JComboBox(FIO);
+        box.setBounds(30,110,200, 30);
+        box.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        box.setForeground(new Color(117, 250, 114));
+        box.setBackground(COLOR_FONT.TextArea);
+        box.setFont(COLOR_FONT.simple);
+        NewMess.add(box);
+        box.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED){
+                    ID_user = box.getSelectedIndex();
+                }
+            }
+        });
+
+        JButton button = new JButton("Отправить");
+        button.setBounds(230, 110, 200, 30);
+        button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        button.setForeground(new Color(117, 250, 114));
+        button.setFocusPainted(false);
+        button.setBackground(COLOR_FONT.TextArea);
+        button.setFont(new Font("Arial Black", Font.BOLD, 20));
+        NewMess.add(button);
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try (PythonInterpreter pyInterp = new PythonInterpreter()) {
+
+                    pyInterp.exec("import requests");
+                    pyInterp.exec("data = {\"Text\":\"" + textArea + "\", \"TargetId\":\"" + ID_user + "\", \"ToVk\":\"" + 1 + "\", \"ToTelegramm\":\"" + 1 + "\"}");
+                    pyInterp.exec("a = requests.post(\"http://buldakovn.pythonanywhere.com/addMessage\", data)");
+
+                }
+            }
+        });
+
 
     }
 }
