@@ -2,17 +2,21 @@ package Global;
 
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GlobalPanel extends JPanel {
     JFrame MainFrame;
-
+    Dimension sizeTemp;
     String[] namesButtons = new String[]{"Главная страница", "Студенты", "Объявления", "Список", "Добавить"};
     JButton[] MainButtons = new JButton[5];
 
@@ -22,7 +26,7 @@ public class GlobalPanel extends JPanel {
     int iterForms=0;
 
 
-    GlobalPanel(JFrame frame) {
+    public GlobalPanel(JFrame frame) {
         MainFrame = frame;
 
         setBackground(COLOR_FONT.Frame);
@@ -36,8 +40,7 @@ public class GlobalPanel extends JPanel {
         Decorate.setBackground(COLOR_FONT.TextArea);
         add(Decorate);
         setVisible(true);
-
-
+        sizeTemp = MainFrame.getSize();
     }
     void Customizing() {
         for (int i = 0; i < 5; ++i) {
@@ -69,7 +72,17 @@ public class GlobalPanel extends JPanel {
                                         NewStudents.setVisible(false);
                                         NewStudentsScroll.setVisible(false);
                                     }
-                                    AddMainPage();
+                                    if (StudentsListScroll!=null) {
+                                        StudentsListScroll.setVisible(false);
+                                        StudentsList.setVisible(false);
+                                    }
+                                    try {
+                                        AddMainPage();
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    }
+                                    MainFrame.pack();
+                                    MainFrame.setSize(sizeTemp);
                                     break;
                                 }
 
@@ -93,8 +106,15 @@ public class GlobalPanel extends JPanel {
                                         MainPageScroll.setVisible(false);
                                         MainPage.setVisible(false);
                                     }
+                                    if (StudentsListScroll!=null) {
+                                        StudentsListScroll.setVisible(false);
+                                        StudentsList.setVisible(false);
+                                    }
                                     MainButtons[3].setVisible(false); MainButtons[4].setVisible(false);
                                     MainButtons[2].setLocation(0,160 );
+
+                                    MainFrame.pack();
+                                    MainFrame.setSize(sizeTemp);
                                     MainFrame.setTitle("Editor – Редактор сообщений");
                                     break;
                                 }
@@ -110,6 +130,14 @@ public class GlobalPanel extends JPanel {
                                         MainPageScroll.setVisible(false);
                                         MainPage.setVisible(false);
                                     }
+                                    try {
+                                        AddStudentList();
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    }
+
+                                    MainFrame.pack();
+                                    MainFrame.setSize(sizeTemp);
                                     MainFrame.setTitle("Editor – Список студентов");
                                     break;
                                 }
@@ -123,7 +151,13 @@ public class GlobalPanel extends JPanel {
                                         MainPageScroll.setVisible(false);
                                         MainPage.setVisible(false);
                                     }
+                                    if (StudentsListScroll!=null) {
+                                        StudentsListScroll.setVisible(false);
+                                        StudentsList.setVisible(false);
+                                    }
                                     AddNewStudents();
+                                    MainFrame.pack();
+                                    MainFrame.setSize(sizeTemp);
                                     MainFrame.setTitle("Editor – Добавить студента");
                                     break;
                                 }
@@ -134,11 +168,15 @@ public class GlobalPanel extends JPanel {
             });
             add(this.MainButtons[i]);
         }
-        AddMainPage();
+        try {
+            AddMainPage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //Метод отображения главной страницы
-    void AddMainPage (){
+    void AddMainPage () throws IOException{
         //Добавляем scrollable панельку для главной страницы
         MainPage = new JPanel();
         MainPage.setLayout(null);
@@ -152,9 +190,22 @@ public class GlobalPanel extends JPanel {
         add(MainPageScroll);
 
         MainButtons[2].setLocation(0,160 );
+        StringBuilder str = new StringBuilder();
+        URL url = null;
+        url = new URL("https://buldakovn.pythonanywhere.com/messagesTelegramm");
+        HttpURLConnection connection = null;
+        connection = (HttpURLConnection) url.openConnection();
+        connection.setDoInput(true);
+        connection.setRequestMethod("GET");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            for (String str2; (str2 = reader.readLine()) != null; ) {
+                str.append(str2);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        //numWin берется из количества сообщений в базе данных
-        int numWin = 7;
+        Map<String, String> text = parseJsonMainPage(str);
 
         JLabel Title = new JLabel("Сообщения");
         Title.setFont(COLOR_FONT.Titles);
@@ -162,27 +213,248 @@ public class GlobalPanel extends JPanel {
         Title.setForeground(COLOR_FONT.Text);
         MainPage.add(Title);
 
-        JTextArea MainPageTextArea[] = new JTextArea[numWin];
-        JScrollPane MainPageTextAreaScroll[] = new JScrollPane[numWin];
+        JTextArea MainPageTextArea[] = new JTextArea[30];
+        JScrollPane MainPageTextAreaScroll[] = new JScrollPane[30];
         //Добавляем TextArea для содержания сообщений в истории сообщений на главной странице
-        if (numWin > 5) MainPage.setPreferredSize(new Dimension(1740, 1230+290*(numWin-5)));
-        for (int j =0; j<numWin; j++) {
+        int j=0;
+        for (Map.Entry<String, String> e : text.entrySet()) {
+            j++;
+            MainPage.setPreferredSize(new Dimension(1740, 1230+290*(j-4)));
             MainPageTextArea[j] = new JTextArea();
             MainPageTextAreaScroll[j] = new JScrollPane(MainPageTextArea[j]);
-            MainPageTextAreaScroll[j].setBounds(30, 50*(j+1)+j*200, 1650, 200);
+            MainPageTextAreaScroll[j].setBounds(30, 50*j+(j-1)*200, 1650, 200);
             MainPageTextAreaScroll[j].setBorder(null);
             MainPageTextAreaScroll[j].setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            MainPageTextArea[j].setBounds(30, 30*(j+1)+j*200, 465, 200);
+            MainPageTextArea[j].setBounds(30, 30*j+(j-1)*200, 465, 200);
             MainPageTextArea[j].setFont(COLOR_FONT.simple);
             MainPageTextArea[j].setBackground(COLOR_FONT.TextArea);
             MainPageTextArea[j].setForeground(COLOR_FONT.Text);
+            String strTemp =  e.getValue() +"\n\n"+ e.getKey();
+            MainPageTextArea[j].setText(strTemp);
             MainPage.add(MainPageTextAreaScroll[j]);
         }
     }
-    //Метод отображения страницы со списком студентов
-    void AddStudentList(){
-
+    //Парсинг сообщений из запросов - для главной страницы
+    Map<String, String> parseJsonMainPage(StringBuilder stringBuilder){
+        Map<String, String> FinalStr = new HashMap<>();
+        StringBuilder tempText, tempDate;
+        String st = String.valueOf(stringBuilder);
+        st = String.valueOf(convertUnicode(st));
+        int i=0;
+        while(i!=st.length()){
+            while(st.charAt(i) != 't'){
+                i++;
+            }
+            i+=5;
+            tempText = new StringBuilder();
+            while (st.charAt(i)!='\"'){
+                tempText.append(st.charAt(i));
+                i++;
+            }
+            while (st.charAt(i) != 'e'){
+                i++;
+            }
+            i+=5;
+            tempDate = new StringBuilder();
+            while (st.charAt(i)!='\"'){
+                tempDate.append(st.charAt(i));
+                i++;
+            }
+            FinalStr.put(String.valueOf(tempText), String.valueOf(tempDate));
+            while(st.charAt(i)!='}'){
+                i++;
+            }
+            if (st.charAt(i+1) ==']') break;
+        }
+        return FinalStr;
     }
+    //Декодер запроса
+    StringBuilder convertUnicode(String st){
+        StringBuilder sb = new StringBuilder(st.length());
+        for (int i = 0; i < st.length(); i++) {
+            char ch = st.charAt(i);
+            if (ch == '\\') {
+                char nextChar = (i == st.length() - 1) ? '\\' : st
+                        .charAt(i + 1);
+                // Octal escape?
+                if (nextChar >= '0' && nextChar <= '7') {
+                    String code = "" + nextChar;
+                    i++;
+                    if ((i < st.length() - 1) && st.charAt(i + 1) >= '0'
+                            && st.charAt(i + 1) <= '7') {
+                        code += st.charAt(i + 1);
+                        i++;
+                        if ((i < st.length() - 1) && st.charAt(i + 1) >= '0'
+                                && st.charAt(i + 1) <= '7') {
+                            code += st.charAt(i + 1);
+                            i++;
+                        }
+                    }
+                    sb.append((char) Integer.parseInt(code, 8));
+                    continue;
+                }
+                switch (nextChar) {
+                    case '\\':
+                        ch = '\\';
+                        break;
+                    case 'b':
+                        ch = '\b';
+                        break;
+                    case 'f':
+                        ch = '\f';
+                        break;
+                    case 'n':
+                        ch = '\n';
+                        break;
+                    case 'r':
+                        ch = '\r';
+                        break;
+                    case 't':
+                        ch = '\t';
+                        break;
+                    case '\"':
+                        ch = '\"';
+                        break;
+                    case '\'':
+                        ch = '\'';
+                        break;
+                    // Hex Unicode: u????
+                    case 'u':
+                        if (i >= st.length() - 5) {
+                            ch = 'u';
+                            break;
+                        }
+                        int code = Integer.parseInt(
+                                "" + st.charAt(i + 2) + st.charAt(i + 3)
+                                        + st.charAt(i + 4) + st.charAt(i + 5), 16);
+                        sb.append(Character.toChars(code));
+                        i += 5;
+                        continue;
+                }
+                i++;
+            }
+            sb.append(ch);
+        }
+        return sb;
+    }
+    //Метод отображения страницы со списком студентов
+    void AddStudentList() throws IOException{
+        StudentsList = new JPanel();
+        StudentsList.setLayout(null);
+        StudentsList.setPreferredSize(new Dimension(1740, 50));
+        StudentsListScroll = new JScrollPane(StudentsList);
+        StudentsListScroll.setBounds(180, 0,1740, 1080);
+        StudentsListScroll.getVerticalScrollBar().setUnitIncrement(16);
+        StudentsList.setBackground(new Color(66,49,58));
+        StudentsListScroll.setVisible(true);
+        StudentsListScroll.setBorder(null);
+        add(StudentsListScroll);
+
+        StringBuilder str = new StringBuilder();
+        URL url = null;
+        url = new URL("https://buldakovn.pythonanywhere.com/getStudents");
+        HttpURLConnection connection1 = (HttpURLConnection) url.openConnection();
+        connection1.setDoInput(true);
+        connection1.setRequestMethod("GET");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection1.getInputStream()))) {
+            for (String str2; (str2 = reader.readLine()) != null; ) {
+                str.append(str2);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Map<Integer, ArrayList<String>> msg = parseStudents(str);
+        ArrayList<String> tempArr;
+        JTextField[] labels;
+        //Строим панель на основе списка
+        int j=0;
+
+        JLabel[] titles = new JLabel[6];
+        String[] titles_names = {"Id", "Имя", "Фамилия", "Id Вконтакте", "Id Телеграмм", "Учебная группа"};
+        for (int i =0; i<6; i++){
+            titles[i] = new JLabel(titles_names[i]);
+            titles[i].setBounds(20+(i*150), 20, 150, 40);
+            titles[i].setFont(COLOR_FONT.simple);
+            titles[i].setForeground(COLOR_FONT.Frame);
+            titles[i].setOpaque(true);
+            titles[i].setBackground(COLOR_FONT.Button1);
+            titles[i].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+            titles[i].setHorizontalAlignment(SwingConstants.CENTER);
+            StudentsList.add(titles[i]);
+        }
+
+        for (Map.Entry<Integer, ArrayList<String>> e : msg.entrySet()) {
+            tempArr = e.getValue();
+            labels = new JTextField[6];
+
+            labels[5] = new JTextField(String.valueOf(e.getKey()));
+            labels[5].setBounds(20, 62+(j*41), 150, 40);
+            labels[5].setFont(COLOR_FONT.simple);
+            labels[5].setForeground(COLOR_FONT.Frame);
+            labels[5].setOpaque(true);
+            labels[5].setBackground(new Color(190, 100, 80));
+            labels[5].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+            labels[5].setHorizontalAlignment(SwingConstants.CENTER);
+            StudentsList.add(labels[5]);
+
+            for (int i=0;i<5; i++) {
+                labels[i] = new JTextField(tempArr.get(i));
+                labels[i].setBounds(170+(i*150), 62+(j*41), 150, 40);
+                labels[i].setFont(COLOR_FONT.simple);
+                labels[i].setForeground(COLOR_FONT.Frame);
+                labels[i].setOpaque(true);
+                labels[i].setBackground(new Color(200, 110, 90));
+                labels[i].setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+                labels[i].setHorizontalAlignment(SwingConstants.CENTER);
+                StudentsList.add(labels[i]);
+            }
+            j++;
+        }
+    }
+
+    Map<Integer, ArrayList<String>> parseStudents(StringBuilder stringBuilder){
+        Map<Integer, ArrayList<String>> msg = new HashMap<>();
+        ArrayList<String> tempArr;
+        StringBuilder[] temp = new StringBuilder[6];
+        String st = String.valueOf(stringBuilder);
+        st = String.valueOf(convertUnicode(st));
+        int i =0;
+        while(st.charAt(i)!=']'){
+            for (int k =0;k<6; k++) {
+                temp[k] = new StringBuilder();
+                while (st.charAt(i) != ':') i++;
+                if (k>0) {
+                    i += 3;
+                    while (true) {
+                        if (st.charAt(i) == '"' && st.charAt(i + 1) == ',' || st.charAt(i) == '"' && st.charAt(i + 1) == '}') {
+                            i += 2;
+                            break;
+                        }
+                        temp[k].append(st.charAt(i));
+                        i++;
+                    }
+                }
+                else {
+                    i+=2;
+                    while (true) {
+                        if (st.charAt(i) == ',') {
+                            break;
+                        }
+                        temp[k].append(st.charAt(i));
+                        i++;
+                    }
+                }
+            }
+            tempArr = new ArrayList<>();
+            for (int j = 1; j<6; j++) {
+                tempArr.add(String.valueOf(temp[j]));
+            }
+            msg.put(Integer.valueOf(String.valueOf(temp[0])), tempArr);
+        }
+        return msg;
+    }
+
     //Метод отображения страницы с добавлением студентов
     ArrayList<JPanel> mainPanel = new ArrayList<>();
     Student<String> stud = new Student<>();
@@ -211,11 +483,10 @@ public class GlobalPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 iterForms++;
-                NewStudents.setPreferredSize(new Dimension(1740, 250+250*iterForms));
+                NewStudents.setPreferredSize(new Dimension(1740, 250+270*iterForms));
                 NewForm.setLocation(25, 225+250*(iterForms));
                 newForms();
                 NewStudents.add(mainPanel.get(iterForms));
-                Dimension sizeTemp = MainFrame.getSize();
                 MainFrame.pack();
                 MainFrame.setSize(sizeTemp);
                 //Создаем кнопку для отправки post-запроса

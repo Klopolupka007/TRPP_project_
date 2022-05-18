@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="java-json">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/OneDrive/Рабочий стол/java-json.jar!/" />
+      <root url="jar://$USER_HOME$/Downloads/jython-installer-2.7.2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/Downloads/jython-installer-2.7.2.jar!/Doc/javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/OneDrive/Рабочий стол/java-json.jar!/" />
+    </SOURCES>
+  </library>
+</component>

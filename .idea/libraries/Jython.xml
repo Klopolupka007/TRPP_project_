@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="Jython">
+    <CLASSES>
+      <root url="file://F:/Jython" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://F:/Jython/Doc/javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://F:/Jython/Demo/embed" />
+      <root url="file://F:/Jython/Demo/jreload/src" />
+      <root url="file://F:/Jython/src" />
+      <root url="file://F:/Jython/tests/java" />
+    </SOURCES>
+    <jarDirectory url="file://F:/Jython" recursive="false" />
+  </library>
+</component>
