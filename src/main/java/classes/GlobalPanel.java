@@ -237,7 +237,8 @@ public class GlobalPanel extends JPanel {
             e.printStackTrace();
         }
 
-        Map<String, String> text = parseJsonMainPage(str);
+        Map<String, String> text = null;
+        if (String.valueOf(str).length() > 0) text = parseJsonMainPage(str);
 
         JLabel Title = new JLabel("Сообщения");
         Title.setFont(COLOR_FONT.Titles);
@@ -249,21 +250,23 @@ public class GlobalPanel extends JPanel {
         JScrollPane MainPageTextAreaScroll[] = new JScrollPane[30];
         //Добавляем TextArea для содержания сообщений в истории сообщений на главной странице
         int j=0;
-        for (Map.Entry<String, String> e : text.entrySet()) {
-            j++;
-            MainPage.setPreferredSize(new Dimension(1740, 1230+290*(j-4)));
-            MainPageTextArea[j] = new JTextArea();
-            MainPageTextAreaScroll[j] = new JScrollPane(MainPageTextArea[j]);
-            MainPageTextAreaScroll[j].setBounds(30, 50*j+(j-1)*200, 1650, 200);
-            MainPageTextAreaScroll[j].setBorder(null);
-            MainPageTextAreaScroll[j].setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-            MainPageTextArea[j].setBounds(30, 30*j+(j-1)*200, 465, 200);
-            MainPageTextArea[j].setFont(COLOR_FONT.simple);
-            MainPageTextArea[j].setBackground(COLOR_FONT.TextArea);
-            MainPageTextArea[j].setForeground(COLOR_FONT.Text);
-            String strTemp =  e.getValue() +"\n\n"+ e.getKey();
-            MainPageTextArea[j].setText(strTemp);
-            MainPage.add(MainPageTextAreaScroll[j]);
+        if (String.valueOf(str).length() > 0) {
+            for (Map.Entry<String, String> e : text.entrySet()) {
+                j++;
+                MainPage.setPreferredSize(new Dimension(1740, 1230 + 290 * (j - 4)));
+                MainPageTextArea[j] = new JTextArea();
+                MainPageTextAreaScroll[j] = new JScrollPane(MainPageTextArea[j]);
+                MainPageTextAreaScroll[j].setBounds(30, 50 * j + (j - 1) * 200, 1650, 200);
+                MainPageTextAreaScroll[j].setBorder(null);
+                MainPageTextAreaScroll[j].setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                MainPageTextArea[j].setBounds(30, 30 * j + (j - 1) * 200, 465, 200);
+                MainPageTextArea[j].setFont(COLOR_FONT.simple);
+                MainPageTextArea[j].setBackground(COLOR_FONT.TextArea);
+                MainPageTextArea[j].setForeground(COLOR_FONT.Text);
+                String strTemp = e.getValue() + "\n\n" + e.getKey();
+                MainPageTextArea[j].setText(strTemp);
+                MainPage.add(MainPageTextAreaScroll[j]);
+            }
         }
     }
     //Парсинг сообщений из запросов - для главной страницы
@@ -684,7 +687,7 @@ public class GlobalPanel extends JPanel {
                 try (PythonInterpreter pyInterp = new PythonInterpreter()) {
 
                     pyInterp.exec("import requests");
-                    pyInterp.exec("data = {\"Text\":\"" + textArea + "\", \"TargetId\":\"" + ID_user + "\", \"ToVk\":\"" + 1 + "\", \"ToTelegramm\":\"" + 1 + "\"}");
+                    pyInterp.exec("data = {\"Text\":\"" + textArea.getText() + "\", \"TargetId\":\"" + ID_user + "\", \"ToVk\":\"" + 1 + "\", \"ToTelegramm\":\"" + 1 + "\"}");
                     pyInterp.exec("a = requests.post(\"http://buldakovn.pythonanywhere.com/addMessage\", data)");
 
                 }

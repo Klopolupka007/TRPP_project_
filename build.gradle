@@ -1,25 +1,40 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.github.rzabini:gradle-jython:1.1.0"
+    }
+}
+/*
 plugins {
     id 'java'
     id 'application'
-    id "com.github.rzabini.gradle-jython" version "1.1.0"
-}
+    id 'com.github.rzabini.gradle-jython' version('1.1.0')
+}*/
 apply plugin: 'application'
-apply plugin: 'com.github.rzabini.gradle-jython'
+apply plugin: "com.github.rzabini.gradle-jython"
+/*
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}*/
+
 mainClassName = 'classes.Main'
 application {
     mainClass.set("$mainClassName")
 }
-
+group 'org.example'
 version '1.0-SNAPSHOT'
 repositories {
-    mavenCentral()
+    maven {
+        mavenLocal()
+        url "https://github.com/jython/jython"
+        mavenCentral()
+    }
 }
-
-dependencies {
-    implementation 'org.python:jython-slim:2.7.2'
-
-}
-
 compileJava {
     options.warnings = true
     options.deprecation = true
@@ -29,6 +44,14 @@ compileJava {
 
 jar {
     manifest {
-        attributes 'Main-Class': "$mainClassName"
+        attributes 'Main-Class': "$mainClassName", 'classpath':'build.libs.Jython.jython.jar'
     }
+}
+
+
+apply plugin: "com.github.rzabini.gradle-jython"
+
+dependencies {
+    implementation 'org.python:jython-slim:2.7.2'
+    implementation fileTree(dir:'build/libs', include:'*.jar')
 }
